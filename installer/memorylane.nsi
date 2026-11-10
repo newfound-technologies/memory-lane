@@ -7,7 +7,7 @@ Unicode true
 !include "LogicLib.nsh"
 
 Name "Memory Lane"
-OutFile "Memory Lane Setup.exe"
+OutFile "Memory-Lane-Setup.exe"
 InstallDir "$LOCALAPPDATA\Memory Lane"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma

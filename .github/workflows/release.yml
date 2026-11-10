@@ -1,0 +1,47 @@
+name: Build and publish release
+
+# Runs whenever code is pushed to main. If the VERSION inside app/photokeeper.py
+# has no release yet, it builds the installer and publishes a new release.
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'installer/**', 'RELEASE_NOTES.md']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read version
+        id: v
+        run: |
+          V=$(grep -m1 '^VERSION' app/photokeeper.py | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+      - name: Already released?
+        id: ex
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install NSIS
+        if: steps.ex.outputs.exists == 'false'
+        run: sudo apt-get update && sudo apt-get install -y nsis
+      - name: Build installer
+        if: steps.ex.outputs.exists == 'false'
+        run: ./installer/build.sh
+      - name: Publish release
+        if: steps.ex.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ steps.v.outputs.version }}" installer/Memory-Lane-Setup.exe \
+            --title "Memory Lane ${{ steps.v.outputs.version }}" \
+            --notes-file RELEASE_NOTES.md --latest --target "${{ github.sha }}"
