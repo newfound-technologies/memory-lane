@@ -1,0 +1,4 @@
+stage/
+*.exe
+*.zip
+__pycache__/
