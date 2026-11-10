@@ -5,7 +5,7 @@ name: Build and publish release
 on:
   push:
     branches: [main]
-    paths: ['app/**', 'installer/**', 'RELEASE_NOTES.md']
+    paths: ['app/**', 'installer/**', 'RELEASE_NOTES.md', '.github/workflows/**']
   workflow_dispatch:
 
 permissions:
@@ -27,7 +27,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "v${{ steps.v.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
+            if gh release view "v${{ steps.v.outputs.version }}" --json assets -q '.assets[].name' | grep -qx 'Memory-Lane-Setup.exe'; then
+              echo "exists=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "exists=false" >> "$GITHUB_OUTPUT"
+              echo "attach=true" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
@@ -37,8 +42,13 @@ jobs:
       - name: Build installer
         if: steps.ex.outputs.exists == 'false'
         run: ./installer/build.sh
+      - name: Attach installer to existing release
+        if: steps.ex.outputs.exists == 'false' && steps.ex.outputs.attach == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "v${{ steps.v.outputs.version }}" installer/Memory-Lane-Setup.exe --clobber
       - name: Publish release
-        if: steps.ex.outputs.exists == 'false'
+        if: steps.ex.outputs.exists == 'false' && steps.ex.outputs.attach != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
