@@ -44,7 +44,7 @@ except Exception:
 
 APP_NAME = "Memory Lane"
 UPDATE_REPO = "newfound-technologies/memory-lane"      # where new versions are published (GitHub Releases)
-VERSION = "2.8.0"
+VERSION = "2.9.0"
 
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".gif", ".bmp",
              ".tif", ".tiff", ".webp"}

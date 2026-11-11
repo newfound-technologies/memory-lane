@@ -1,4 +1,4 @@
-**What's new:** Memory Lane now shows a green bar when a newer version is available, with a button to download it.
+**What's new:** Photos taken with location turned on now show a yellow 📍 tag with the town, right on the picture, next to the green name tag.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.

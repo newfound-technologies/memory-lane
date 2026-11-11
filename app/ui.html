@@ -184,7 +184,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
 .sstat{font-weight:650}.sstat.on{color:#1d7a46}.sstat.off{color:#b3261e}
 .ph{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#dfe6ee;cursor:pointer;box-shadow:0 1px 3px rgba(14,28,47,.15);border:0;padding:0}
 .ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s}
-.ph .nmd{position:absolute;top:7px;left:7px;max-width:calc(100% - 14px);padding:3px 9px;border-radius:12px;background:#1f8a4c;color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.35)}.ph .nmd.tg{background:#2f6fc2}.photos.small .ph .nmd{top:4px;left:4px;padding:1px 6px;font-size:11px;max-width:calc(100% - 8px)}
+.ph .bdg{position:absolute;top:7px;left:7px;max-width:calc(100% - 14px);display:flex;flex-direction:column;align-items:flex-start;gap:4px;z-index:2;pointer-events:none}.ph .bdg>span{max-width:100%}.ph .nmd{position:static;max-width:100%;padding:3px 9px;border-radius:12px;background:#1f8a4c;color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.35)}.ph .nmd.tg{background:#2f6fc2}.ph .nmd.pl{background:#f2c230;color:#3a2a00;text-shadow:none}.photos.small .ph .bdg{top:4px;left:4px;gap:2px;max-width:calc(100% - 8px)}.photos.small .ph .nmd{padding:1px 6px;font-size:11px}
 .ph:hover img{transform:scale(1.05)}
 .ph.sel{outline:4px solid var(--gold);outline-offset:-4px}
 .ph.sel::after{content:"✓";position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:var(--gold);color:#201605;font-weight:800;display:flex;align-items:center;justify-content:center}
@@ -496,7 +496,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
           <li>Put new photos in one of your photo folders and click <b>Organize everything</b> again. It only handles what is new.</li>
           <li>Want it hands-free? Settings → <b>Automatic weekly run</b> → pick a day and time → <b>Turn on</b>.</li></ul></div></details>
         <details><summary>Places and “Show on map”</summary><div class="gb"><ul>
-          <li>Photos taken with location turned on show the nearest town, for example “West Yellowstone, Montana”. You can search by it.</li>
+          <li>Photos taken with location turned on show the nearest town, for example “West Yellowstone, Montana”. A yellow 📍 tag on the picture shows the town, and you can search by it.</li>
           <li>It is worked out on your computer; nothing is sent anywhere. “Show on map” opens the map only when you click it.</li>
           <li>Photos with no location stored (screenshots, location turned off) simply show no place.</li></ul></div></details>
         <details><summary>If something goes wrong</summary><div class="gb"><ul>
@@ -780,10 +780,14 @@ const vio=('IntersectionObserver' in window)?new IntersectionObserver(es=>es.for
 function wireVideos(){if(!vio)return;document.querySelectorAll('.ph video.vp:not([data-w])').forEach(v=>{v.dataset.w=1;vio.observe(v);const ph=v.closest('.ph');
   ph.addEventListener('mouseenter',()=>{if(ph.classList.contains('vok'))v.play().catch(()=>{})});
   ph.addEventListener('mouseleave',()=>{v.pause();try{v.currentTime=0.1}catch(_){}})})}
-function badge(x){if(x.people)return `<span class="nmd" title="Named: ${esc(x.people)}">✓ ${esc(x.people.split(',')[0].trim())}${x.people.includes(',')?' +':''}</span>`;
-  if(x.done)return `<span class="nmd tg" title="Sorted${x.mark?': '+esc(x.mark):''}">✓ ${esc(x.mark||'Done')}</span>`;return ''}
+function placeShort(p){return String(p||'').split(',')[0].trim()}
+function badge(x){let h='';
+  if(x.people)h+=`<span class="nmd" title="Named: ${esc(x.people)}">✓ ${esc(x.people.split(',')[0].trim())}${x.people.includes(',')?' +':''}</span>`;
+  else if(x.done)h+=`<span class="nmd tg" title="Sorted${x.mark?': '+esc(x.mark):''}">✓ ${esc(x.mark||'Done')}</span>`;
+  if(x.place)h+=`<span class="nmd pl" title="${esc(x.place)}">📍 ${esc(placeShort(x.place))}</span>`;
+  return h?`<div class="bdg">${h}</div>`:''}
 function capText(x){return [x.taken,x.place,x.people,(x.tags||'').split(',')[0].trim()].filter(Boolean).join(' · ')}
-function repaint(){document.querySelectorAll('#photos .ph').forEach(e=>{const x=items[+e.dataset.i];if(!x)return;const o=e.querySelector('.nmd');if(o)o.remove();const b=badge(x);if(b)e.insertAdjacentHTML('afterbegin',b);const cd=e.querySelector('.cd');if(cd)cd.textContent=capText(x)})}
+function repaint(){document.querySelectorAll('#photos .ph').forEach(e=>{const x=items[+e.dataset.i];if(!x)return;const o=e.querySelector('.bdg');if(o)o.remove();const b=badge(x);if(b)e.insertAdjacentHTML('afterbegin',b);const cd=e.querySelector('.cd');if(cd)cd.textContent=capText(x)})}
 function refreshKeep(){const keep=new Set(sel);return search(true).then(()=>{sel.clear();keep.forEach(i=>sel.add(i));document.querySelectorAll('.ph').forEach(e=>{const x=items[+e.dataset.i];if(x&&sel.has(x.id))e.classList.add('sel')});updSel()})}
 async function markDone(on){if(!sel.size){toast('Click some photos first.');return}
   await api('/api/reviewed',{ids:[...sel],on});
