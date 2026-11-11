@@ -42,7 +42,16 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
           NEEDRESTART_MODE: a
-        run: sudo -E apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update && sudo -E apt-get -o Acquire::Retries=3 install -y --no-install-recommends nsis
+        run: |
+          sudo systemctl stop apt-daily.service apt-daily-upgrade.service unattended-upgrades.service 2>/dev/null || true
+          for i in 1 2 3; do
+            if sudo -E timeout 150 apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 -o DPkg::Lock::Timeout=30 update \
+               && sudo -E timeout 200 apt-get -o Acquire::Retries=2 -o DPkg::Lock::Timeout=30 install -y --no-install-recommends nsis; then
+              break
+            fi
+            echo "apt attempt $i failed, retrying"; sleep 5
+          done
+          command -v makensis
       - name: Build installer
         if: steps.ex.outputs.exists == 'false'
         run: ./installer/build.sh
