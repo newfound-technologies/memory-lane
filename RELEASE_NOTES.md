@@ -1,4 +1,4 @@
-**What's new:** Photos taken with location turned on now show a yellow 📍 tag with the town, right on the picture, next to the green name tag.
+**What's new:** You can now type in where a photo was taken. Open the photo, type the place under the date, and click Save place. It then shows on the picture as a yellow 📍 tag.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.
