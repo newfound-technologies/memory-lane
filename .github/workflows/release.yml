@@ -43,10 +43,13 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
           NEEDRESTART_MODE: a
         run: |
+          # Use the main Ubuntu servers (the Azure mirror is sometimes down)
+          sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' /etc/apt/sources.list /etc/apt/sources.list.d/*.sources /etc/apt/sources.list.d/*.list 2>/dev/null || true
+          sudo rm -f /etc/apt/apt-mirrors.txt
           sudo systemctl stop apt-daily.service apt-daily-upgrade.service unattended-upgrades.service 2>/dev/null || true
           for i in 1 2 3; do
-            if sudo -E timeout 150 apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 -o DPkg::Lock::Timeout=30 update \
-               && sudo -E timeout 200 apt-get -o Acquire::Retries=2 -o DPkg::Lock::Timeout=30 install -y --no-install-recommends nsis; then
+            if sudo -E timeout 90 apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 -o DPkg::Lock::Timeout=30 update \
+               && sudo -E timeout 150 apt-get -o Acquire::Retries=2 -o DPkg::Lock::Timeout=30 install -y --no-install-recommends nsis; then
               break
             fi
             echo "apt attempt $i failed, retrying"; sleep 5
