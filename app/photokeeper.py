@@ -44,7 +44,7 @@ except Exception:
 
 APP_NAME = "Memory Lane"
 UPDATE_REPO = "newfound-technologies/memory-lane"      # where new versions are published (GitHub Releases)
-VERSION = "2.9.0"
+VERSION = "2.10.0"
 
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".gif", ".bmp",
              ".tif", ".tiff", ".webp"}
@@ -335,6 +335,17 @@ class Catalog:
     @staticmethod
     def clean_tag(t):
         return re.sub(r"\s+", " ", (t or "").strip().lower())[:40]
+
+    def set_place(self, ids, place):
+        """Type in (or clear) where a photo was taken. Placed=1 keeps the automatic
+        place finder from replacing what you typed."""
+        place = re.sub(r"\s+", " ", (place or "").replace("\x00", "").strip())[:80]
+        n = 0
+        for i in ids:
+            cur = self.db.execute("UPDATE files SET place=?, placed=1 WHERE sha=?", (place or None, i))
+            n += cur.rowcount
+        self.db.commit()
+        return place
 
     def add_tag(self, ids, tag):
         tag = self.clean_tag(tag)
@@ -3012,6 +3023,15 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 c.set_reviewed([str(i) for i in body.get("ids", [])][:5000], bool(body.get("on", True)))
                 return self._send({"ok": True})
+            finally:
+                c.close()
+        if path == "/api/place_set":
+            if not dest or not catalog_exists(dest):
+                return self._send({"error": "No library yet."})
+            c = Catalog(dest)
+            try:
+                ids = [str(i) for i in body.get("ids", [])][:5000]
+                return self._send({"place": c.set_place(ids, body.get("place", ""))})
             finally:
                 c.close()
         if path in ("/api/tags/edit", "/api/tags/rename", "/api/tags/delete"):

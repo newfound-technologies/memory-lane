@@ -496,7 +496,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
           <li>Put new photos in one of your photo folders and click <b>Organize everything</b> again. It only handles what is new.</li>
           <li>Want it hands-free? Settings → <b>Automatic weekly run</b> → pick a day and time → <b>Turn on</b>.</li></ul></div></details>
         <details><summary>Places and “Show on map”</summary><div class="gb"><ul>
-          <li>Photos taken with location turned on show the nearest town, for example “West Yellowstone, Montana”. A yellow 📍 tag on the picture shows the town, and you can search by it.</li>
+          <li>Photos taken with location turned on show the nearest town, for example “West Yellowstone, Montana”. A yellow 📍 tag on the picture shows the town, and you can search by it. If a photo has no location, or the wrong one, open the photo, type it in the box under the date, and click <b>Save place</b>.</li>
           <li>It is worked out on your computer; nothing is sent anywhere. “Show on map” opens the map only when you click it.</li>
           <li>Photos with no location stored (screenshots, location turned off) simply show no place.</li></ul></div></details>
         <details><summary>If something goes wrong</summary><div class="gb"><ul>
@@ -549,7 +549,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
   <button class="btn light nv" style="left:18px" onclick="stepLb(-1)">‹</button>
   <button class="btn light nv" style="right:18px" onclick="stepLb(1)">›</button>
   <div class="box"><div class="imgwrap"><img id="lbimg" alt=""><video id="lbvid" controls playsinline style="display:none;max-width:100%;max-height:70vh;border-radius:10px;background:#000"></video></div>
-    <div class="info"><h3 id="lbdate"></h3><div id="lbplace" class="small" style="margin:-4px 0 6px;color:#d8e4f2"></div><div id="lbtags" class="chips" style="margin:6px 0"></div>
+    <div class="info"><h3 id="lbdate"></h3><div id="lbplace" class="small" style="margin:-4px 0 6px;color:#d8e4f2"></div><div class="row" style="margin:4px 0 8px;align-items:center;gap:8px;flex-wrap:nowrap"><input type="text" id="lbPlaceIn" maxlength="80" placeholder="Type where this was taken…" style="padding:7px 10px;font-size:15px;min-width:0;flex:1" onkeydown="if(event.key==='Enter')lbSavePlace()"><button class="btn light" style="margin:0;padding:7px 12px;font-size:14px" onclick="lbSavePlace()">Save place</button></div><div id="lbtags" class="chips" style="margin:6px 0"></div>
       <div class="row" style="margin:6px 0 10px"><input type="text" id="lbNew" list="tagnames" placeholder="Add a tag…" style="padding:9px 12px;font-size:16px" onkeydown="if(event.key==='Enter')lbAddTag()"><button class="btn light" style="margin:0;padding:9px 16px" onclick="lbAddTag()">Add</button></div><div id="lbppl" style="margin-top:8px"></div><div id="lbfaces" style="margin:8px 0"></div>
       <div id="lbAddBox" class="row" style="margin:6px 0 4px;align-items:center;gap:8px;flex-wrap:nowrap"><span class="combo" style="flex:1"><input type="text" list="names" id="lbAddWho" placeholder="Add another person…" style="padding:7px 10px;font-size:15px;min-width:0" onkeydown="if(event.key==='Enter')lbAddPerson()"><button type="button" class="cbtn" tabindex="-1" title="Choose a name" onclick="openCombo('lbAddWho')">▾</button></span><button class="btn light" style="margin:0;padding:7px 12px;font-size:14px" onclick="lbAddPerson()">Add</button></div><div class="row" style="margin:6px 0 10px"><input type="text" id="lbName" placeholder="File name" style="padding:9px 12px;font-size:16px" onkeydown="if(event.key==='Enter')lbRename()"><button class="btn light" style="margin:0;padding:9px 16px" onclick="lbRename()">Rename file</button></div><div class="path" id="lbpath"></div>
     <button class="btn light" style="margin:0" onclick="showInFolder()">Show in folder</button>
@@ -923,11 +923,17 @@ function openLb(i){lbi=i;const x=items[i];if(!x)return;$('lb').classList.add('on
   $('lbimg').style.display=x.category==='Videos'?'none':'';if(x.category!=='Videos')$('lbimg').src=`/api/thumb?p=${encodeURIComponent(x.path)}&s=lg&tok=${T}`;
   $('lbdate').textContent=x.taken||'Undated';
   $('lbplace').innerHTML=x.place?`📍 ${esc(x.place)} · <a href="https://www.google.com/maps/search/${encodeURIComponent(x.place)}" target="_blank" rel="noopener" style="color:#9fd4da">Show on map</a>`:'';
+  $('lbPlaceIn').value=x.place||'';
   renderLbTags();
   renderLbPeople();loadLbFaces();
   $('lbpath').textContent=x.path.replace(/^Library[\\/]/,'');
   $('lbName').value=baseName(x.path).replace(/\.[^.]*$/,'');
 }
+async function lbSavePlace(){const x=items[lbi];if(!x)return;const v=$('lbPlaceIn').value.trim();
+  const r=await api('/api/place_set',{ids:[x.id],place:v});if(r.error){toast(r.error);return}
+  x.place=r.place||'';$('lbPlaceIn').value=x.place;
+  $('lbplace').innerHTML=x.place?`📍 ${esc(x.place)} · <a href="https://www.google.com/maps/search/${encodeURIComponent(x.place)}" target="_blank" rel="noopener" style="color:#9fd4da">Show on map</a>`:'';
+  repaint();toast(x.place?'Place saved: '+x.place:'Place removed')}
 function baseName(p){return p.split(/[\\/]/).pop()}
 async function lbRename(){const x=items[lbi];if(!x)return;const n=$('lbName').value.trim();if(!n){toast('Type a name first.');return}
   const r=await api('/api/rename',{ids:[x.id],base:n,style:'single'});
