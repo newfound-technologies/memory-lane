@@ -43,8 +43,9 @@ except Exception:
     HAVE_HEIF = False
 
 APP_NAME = "Memory Lane"
+DOWNLOAD_PAGE = "https://newfound-technologies.github.io/memory-lane/"
 UPDATE_REPO = "newfound-technologies/memory-lane"      # where new versions are published (GitHub Releases)
-VERSION = "2.10.0"
+VERSION = "2.10.1"
 
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".gif", ".bmp",
              ".tif", ".tiff", ".webp"}
@@ -2545,7 +2546,7 @@ def check_for_update():
         tag = str(d.get("tag_name", ""))
         if tag and _vtuple(tag) > _vtuple(VERSION):
             out = {"available": True, "version": tag.lstrip("vV"),
-                   "url": d.get("html_url") or f"https://github.com/{UPDATE_REPO}/releases/latest"}
+                   "url": DOWNLOAD_PAGE}
     except Exception:
         pass
     _UPD["t"], _UPD["v"] = time.time(), out
