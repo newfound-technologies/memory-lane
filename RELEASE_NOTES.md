@@ -1,4 +1,4 @@
-**What's new:** The green update bar now opens the Memory Lane download page, not the GitHub page.
+**What's new:** You can now set the place on many photos at once, and removing a tag now clears the blue sorted mark right away.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.

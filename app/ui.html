@@ -361,6 +361,8 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
           <button class="btn primary normalOnly" id="btnKind" style="margin:0" onclick="moveKind()">Move to Photos</button>
           <span class="combo normalOnly" style="flex:none;width:210px"><input type="text" id="selPerson" list="names" placeholder="Person's name" onkeydown="if(event.key==='Enter')bulkPerson()"><button type="button" class="cbtn" tabindex="-1" title="Choose a name" onclick="openCombo('selPerson')">▾</button></span>
           <button class="btn primary normalOnly" style="margin:0" onclick="bulkPerson()">Name person</button>
+          <input type="text" class="normalOnly" id="selPlace" maxlength="80" placeholder="Where taken (e.g. Trinidad, Colorado)" style="max-width:270px" onkeydown="if(event.key==='Enter')bulkPlace()">
+          <button class="btn primary normalOnly" style="margin:0" onclick="bulkPlace()">Set place</button>
           <button class="btn ghost normalOnly" style="margin:0;color:#b3261e;border-color:#e7b9b5" onclick="bulkDelete()">Delete</button>
           <button class="btn primary trashOnly" style="margin:0" onclick="bulkRestore()">Restore</button>
           <button class="btn ghost trashOnly" style="margin:0" onclick="restoreAll()">Restore all</button>
@@ -793,6 +795,7 @@ async function markDone(on){if(!sel.size){toast('Click some photos first.');retu
   await api('/api/reviewed',{ids:[...sel],on});
   items.forEach(x=>{if(sel.has(x.id)){x.done=on?(x.people?2:1):((x.mark||x.people)?x.done:0)}});
   toast((on?'Marked ':'Unmarked ')+sel.size+' photo'+(sel.size===1?'':'s')+(on?' as sorted':''));
+  if(!on)await syncMarks([...sel]);
   if($('namedsel').value)await refreshKeep();else repaint()}
 let lbi=0,selMode=false,sel=new Set(),trashMode=false;
 function fillKinds(st){const s=$('catsel'),cur=s.value,ks=(trashMode?st.kinds_trash:st.kinds)||[];
@@ -861,7 +864,7 @@ function clickPhoto(i){const x=items[i];if(!x)return;
   if(!selMode){openLb(i);return}
   if(sel.has(x.id))sel.delete(x.id);else sel.add(x.id);
   const el=document.querySelector(`.ph[data-i="${i}"]`);if(el)el.classList.toggle('sel',sel.has(x.id));updSel()}
-function pendingEdits(){return {tag:$('selTag').value.trim(),person:$('selPerson').value.trim(),name:$('rnBase').value.trim()}}
+function pendingEdits(){return {tag:$('selTag').value.trim(),person:$('selPerson').value.trim(),name:$('rnBase').value.trim(),place:$('selPlace').value.trim()}}
 let cbTarget=null;
 function openCombo(id){const inp=$(id),pop=$('cbpop');const names=[...$('names').options].map(o=>o.value);
   if(!names.length){toast('No names yet. Type one.');inp.focus();return}
@@ -888,18 +891,26 @@ function updSel(){$('btnKind').textContent=kindTarget()==='Photos'?'Move to Phot
   $('selcount').textContent=sel.size+' selected';const p=pendingEdits();{const w=$('swapWrap');w.style.display=(tagFilter&&!trashMode)?'inline-flex':'none';$('swapTxt').textContent='Replace “'+tagFilter+'” with this tag (untick to just add)'}
   $('btnDone').textContent=(!trashMode&&(p.tag||p.person||p.name))?'Apply & finish':'Done'}
 async function finishSelect(){const p=pendingEdits();
-  if(trashMode||!(p.tag||p.person||p.name)){toggleSelect();return}
+  if(trashMode||!(p.tag||p.person||p.name||p.place)){toggleSelect();return}
   if(!sel.size){toast('Click some photos first, then press Apply & finish.');return}
   const ids=[...sel];const again=()=>{sel.clear();ids.forEach(i=>sel.add(i))};
   if(p.tag){await bulkTag('add');again()}
   if(p.person){await bulkPerson();again()}
+  if(p.place){await bulkPlace();again()}
   if(p.name){const ok=await bulkRename();if(!ok){updSel();return}again()}
   if($('catsel').value==='Screenshots'&&confirm('These '+ids.length+' photo'+(ids.length>1?'s are':' is')+' still in Screenshots.\n\nAlso move them into your regular Photos folders, filed by date like the others?')){again();await moveKind(false)}
   toggleSelect()}
-['selTag','selPerson','rnBase'].forEach(id=>document.addEventListener('input',e=>{if(e.target&&e.target.id===id)updSel()}));
+['selTag','selPerson','rnBase','selPlace'].forEach(id=>document.addEventListener('input',e=>{if(e.target&&e.target.id===id)updSel()}));
 function toggleSelect(){selMode=!selMode;if(!selMode){sel.clear();document.querySelectorAll('.ph.sel').forEach(e=>e.classList.remove('sel'))}
   $('selbar').hidden=!selMode;$('btnSel').textContent=selMode?'Stop selecting':'Select photos';updSel()}
 function selectAllShown(){items.forEach(x=>sel.add(x.id));document.querySelectorAll('.ph').forEach(e=>e.classList.add('sel'));updSel()}
+async function syncMarks(ids){const r=await api('/api/marks',{ids});const m=r.marks||{};
+  items.forEach(x=>{const k=m[x.id];if(k){x.done=k.done;x.mark=k.mark;x.people=k.people||x.people}});repaint()}
+async function bulkPlace(){const v=$('selPlace').value.trim();if(!sel.size){toast('Click some photos first.');return}if(!v){toast('Type a place first.');return}
+  if(sel.size>200&&!confirm('Set the place “'+v+'” on '+sel.size+' photos?'))return;
+  const r=await api('/api/place_set',{ids:[...sel],place:v});if(r.error){toast(r.error);return}
+  items.forEach(x=>{if(sel.has(x.id))x.place=r.place});repaint();
+  toast('Place “'+r.place+'” saved on '+sel.size+' photo'+(sel.size===1?'':'s'))}
 async function bulkTag(action){const t=$('selTag').value.trim().toLowerCase();if(!sel.size){toast('Click some photos first.');return}if(!t){toast('Type a tag name first.');return}
   const swap=action==='add'&&tagFilter&&$('swapChk').checked&&t!==tagFilter.toLowerCase();
   if(sel.size>200&&!confirm((swap?'Change “'+tagFilter+'” to “'+t+'”':(action==='add'?'Add':'Remove')+' the tag “'+t+'”')+' on '+sel.size+' photos?'))return;
@@ -908,6 +919,7 @@ async function bulkTag(action){const t=$('selTag').value.trim().toLowerCase();if
   items.forEach(x=>{if(sel.has(x.id)){let l=tagList(x);if(action==='add'){if(!l.includes(t))l.push(t);if(swap)l=l.filter(v=>v.toLowerCase()!==tagFilter.toLowerCase())}else l=l.filter(v=>v!==t);x.tags=l.join(', ');if(action==='add'&&!x.people){x.done=1;x.mark=t}}});
   toast(swap?'Changed “'+tagFilter+'” to “'+t+'” on '+sel.size+' photos':(action==='add'?'Added “':'Removed “')+t+'” '+(action==='add'?'to ':'from ')+sel.size+' photos');
   await refreshTagList();
+  if(action==='remove')await syncMarks([...sel]);
   if(swap||$('namedsel').value||(action==='remove'&&tagFilter&&t===tagFilter.toLowerCase()))await refreshKeep();else repaint()}
 async function refreshTagList(){const t=await api('/api/tags');const tags=t.tags||[];
   $('tagnames').innerHTML=tags.map(x=>`<option value="${esc(x.tag)}">`).join('');
@@ -1011,7 +1023,7 @@ function renderLbTags(){const x=items[lbi];if(!x)return;
 async function lbAddTag(){const x=items[lbi];const t=$('lbNew').value.trim().toLowerCase();if(!x||!t)return;
   await api('/api/tags/edit',{action:'add',ids:[x.id],tag:t});const l=tagList(x);if(!l.includes(t))l.push(t);x.tags=l.join(', ');if(!x.people){x.done=1;x.mark=t}$('lbNew').value='';renderLbTags();repaint();refreshTagList()}
 async function lbRemoveTag(t){const x=items[lbi];if(!x)return;await api('/api/tags/edit',{action:'remove',ids:[x.id],tag:t});
-  x.tags=tagList(x).filter(v=>v!==t).join(', ');if(x.mark===t){x.mark='';if(!x.people)x.done=0}renderLbTags();repaint();refreshTagList()}
+  x.tags=tagList(x).filter(v=>v!==t).join(', ');renderLbTags();await syncMarks([x.id]);refreshTagList()}
 function closeLb(){$('lb').classList.remove('on');try{$('lbvid').pause()}catch(_){}}
 function stepLb(d){const n=lbi+d;if(n>=0&&n<items.length)openLb(n);else if(n>=items.length&&offset<total){search(false).then(()=>openLb(n))}}
 function showInFolder(){const x=items[lbi];if(x)api('/api/open',{path:x.path})}

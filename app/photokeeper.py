@@ -45,7 +45,7 @@ except Exception:
 APP_NAME = "Memory Lane"
 DOWNLOAD_PAGE = "https://newfound-technologies.github.io/memory-lane/"
 UPDATE_REPO = "newfound-technologies/memory-lane"      # where new versions are published (GitHub Releases)
-VERSION = "2.10.1"
+VERSION = "2.11.0"
 
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".gif", ".bmp",
              ".tif", ".tiff", ".webp"}
@@ -336,6 +336,20 @@ class Catalog:
     @staticmethod
     def clean_tag(t):
         return re.sub(r"\s+", " ", (t or "").strip().lower())[:40]
+
+    def marks(self, ids):
+        """Current done/mark state for some photos (used to refresh the blue and green tags)."""
+        people = self._people_by_sha()
+        manual = {}
+        for sha, t in self.db.execute("SELECT sha, tag FROM tags WHERE manual=1 ORDER BY score DESC"):
+            manual.setdefault(sha, t)
+        reviewed = {r[0] for r in self.db.execute("SELECT sha FROM reviewed")}
+        out = {}
+        for i in ids:
+            ppl = people.get(i, "")
+            out[i] = {"done": 2 if ppl else (1 if (i in manual or i in reviewed) else 0),
+                      "mark": manual.get(i, ""), "people": ppl}
+        return out
 
     def set_place(self, ids, place):
         """Type in (or clear) where a photo was taken. Placed=1 keeps the automatic
@@ -3024,6 +3038,14 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 c.set_reviewed([str(i) for i in body.get("ids", [])][:5000], bool(body.get("on", True)))
                 return self._send({"ok": True})
+            finally:
+                c.close()
+        if path == "/api/marks":
+            if not dest or not catalog_exists(dest):
+                return self._send({"marks": {}})
+            c = Catalog(dest)
+            try:
+                return self._send({"marks": c.marks([str(i) for i in body.get("ids", [])][:5000])})
             finally:
                 c.close()
         if path == "/api/place_set":
