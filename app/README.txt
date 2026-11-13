@@ -100,6 +100,8 @@ ADD ANOTHER PERSON: open a photo and use "Add another person..." under the faces
 
 PLACES: photos taken with location turned on show the nearest town (for example "West Yellowstone, Montana") in the photo view and under the thumbnail, and you can search by it (type "montana" or "paris" in the search box). It is part of "Organize everything", or run it alone from Tools, step 5, "Find places". The town is worked out on this computer from a built-in list; nothing is sent over the internet. "Show on map" is a link that opens the place name in your browser only when you click it. Photos with no location stored in them (screenshots, photos from apps, photos with location turned off) simply have no place. iPhone HEIC photos keep their location when converted to JPEG. The nearest town can be a neighboring one, since the list is towns, not parks or landmarks.
 
+SETTING A PLACE YOURSELF: if a photo has no location, or the wrong one, open it, type the town in the box under the date and click "Save place". For many photos, click "Select photos", pick them, type the town in the "Where taken" box and click "Set place" (only the place changes). A yellow pin tag on the picture shows the place. Clear the box and click "Save place" to remove a place from one photo.
+
 HOME SCREEN COUNTS: click the Photos or Videos number to see them all as small pictures, and keep scrolling to load more. "Small pictures" / "Larger pictures" on the Photos page switches the size any time.
 
 AUTOMATIC WEEKLY RUN: the button for the current state (On or Off) is highlighted green with a check mark, and the status line below is green when on and red when off.

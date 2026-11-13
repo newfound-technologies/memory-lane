@@ -1,4 +1,4 @@
-**What's new:** You can now set the place on many photos at once, and removing a tag now clears the blue sorted mark right away.
+**What's new:** The User guide now covers setting places, the green, blue and yellow tags, videos, new-photo review, and updating.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.
