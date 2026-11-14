@@ -10,4 +10,8 @@ Double-click the file you download. Windows may show a blue "Windows protected y
 
 All versions and what changed: [Releases](https://github.com/newfound-technologies/memory-lane/releases).
 
-Designed and built by Scott Arnett. Free use for family.
+## For family use
+
+Memory Lane is made for my family and friends. It is provided as is, with no warranty and no support, and you use it at your own risk. Please keep your own backup of any photos that matter to you. Please do not share it further or use it commercially without asking me first.
+
+Designed and built by Scott Arnett.
