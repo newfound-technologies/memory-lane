@@ -262,8 +262,8 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
   <p>Let’s set up your library. It takes about a minute, and you can change any of this later in Settings.</p>
   <div class="wzstep"><b>1. Where are your photos?</b><span class="small">Add every folder that has photos or videos (Pictures, Desktop, a USB drive…). Sub-folders are included.</span>
     <div class="wzlist" id="wzSrc"></div><button class="btn ghost" style="margin:0" onclick="wzAdd()">Add a folder…</button></div>
-  <div class="wzstep"><b>2. Where should the clean library go?</b><span class="small">Choose a folder inside iCloud Drive so it syncs to your phone. Your original photos are never changed.</span>
-    <div class="row"><input type="text" id="wzDest" placeholder="C:\Users\You\iCloudDrive\Photo Library" oninput="wzCheck()"><button class="btn ghost" style="margin:0" onclick="wzPick()">Browse…</button></div></div>
+  <div class="wzstep"><b>2. Where should the clean library go?</b><span class="small">Choose the folder on your home server (for example the Z: drive) where the clean library should be saved. Your original photos are never changed.</span>
+    <div class="row"><input type="text" id="wzDest" placeholder="Z:\Photo Library" oninput="wzCheck()"><button class="btn ghost" style="margin:0" onclick="wzPick()">Browse…</button></div></div>
   <div class="wzact"><button class="btn primary" id="wzGo" style="margin:0" disabled onclick="wzSave()">Save and continue</button><a onclick="wzLater()">I’ll do this later</a></div>
 </div><div id="wzDone" hidden>
   <h2 class="script">All set</h2>
@@ -455,7 +455,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
       <header><h1>User guide</h1><p class="sub">Short and simple. Click a heading to open it. <a class="noprint" href="#" onclick="window.print();return false">Print this guide</a></p></header>
       <div class="guide">
         <details open><summary>Getting started (3 steps)</summary><div class="gb">
-          <ol><li><b>Tell Memory Lane where your photos are.</b> Pick every folder that has photos or videos, and choose where the clean library should go (a folder inside iCloud Drive syncs to your phone). You do this on the first screen, or later in <b>Settings</b>.</li>
+          <ol><li><b>Tell Memory Lane where your photos are.</b> Pick every folder that has photos or videos, and choose where the clean library should go (for example a folder on your home server drive). You do this on the first screen, or later in <b>Settings</b>.</li>
           <li><b>Click “Organize everything” on Home.</b> It copies your photos into the library, sorted by year and month, skips exact duplicates, converts iPhone photos, adds smart tags, finds places and finds faces.</li>
           <li><b>Name the people.</b> Open <b>People</b> and type a name under each face group.</li></ol>
           <div class="tip">Your original photos are never changed, moved or deleted. Memory Lane only makes copies.</div></div></details>
@@ -537,8 +537,8 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
         <textarea id="src" placeholder="C:\Users\You\Pictures"></textarea>
         <button class="btn ghost" onclick="browse('src')">Add a folder…</button>
         <label class="f">Where the clean library should go</label>
-        <p class="hint" style="margin-bottom:8px">Choose a folder inside iCloud Drive so it syncs to your phone.</p>
-        <div class="row"><input type="text" id="dest" placeholder="C:\Users\You\iCloudDrive\Photo Library"><button class="btn ghost" style="margin:0" onclick="browse('dest')">Browse…</button></div>
+        <p class="hint" style="margin-bottom:8px">Choose the folder on your home server (for example the Z: drive) where the clean library should be saved.</p>
+        <div class="row"><input type="text" id="dest" placeholder="Z:\Photo Library"><button class="btn ghost" style="margin:0" onclick="browse('dest')">Browse…</button></div>
       </div>
       <div class="card">
         <h2>How files are handled</h2>

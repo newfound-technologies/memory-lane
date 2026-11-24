@@ -2,13 +2,13 @@
 """
 Memory Lane (PhotoKeeper) - gathers photos and videos from folders, removes duplicates,
 sorts them by date and type, and files them into one clean library
-(for example, inside iCloud Drive).
+(for example, on a home server drive).
 
 SAFETY: Your original files are only ever READ. PhotoKeeper copies; it never
 moves, renames, edits or deletes anything in your source folders.
 
 Run:  python photokeeper.py            (opens the app in your web browser)
-CLI:  python photokeeper.py --cli --src "D:\\Pictures" --dest "C:\\Users\\you\\iCloudDrive\\Photo Library" [--dry-run]
+CLI:  python photokeeper.py --cli --src "D:\\Pictures" --dest "Z:\\Photo Library" [--dry-run]
 """
 import argparse
 import datetime as dt
@@ -45,7 +45,7 @@ except Exception:
 APP_NAME = "Memory Lane"
 DOWNLOAD_PAGE = "https://newfound-technologies.github.io/memory-lane/"
 UPDATE_REPO = "newfound-technologies/memory-lane"      # where new versions are published (GitHub Releases)
-VERSION = "2.11.1"
+VERSION = "2.11.2"
 
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".gif", ".bmp",
              ".tif", ".tiff", ".webp"}
@@ -212,8 +212,8 @@ def inspect_image(path):
 # --------------------------------------------------------------------------
 # catalog (remembers everything it has filed, so re-runs are fast and safe)
 #
-# The working database lives on THIS computer (not inside iCloud Drive, where
-# constant syncing can damage a database). A backup copy is saved into the
+# The working database lives on THIS computer (not in the library folder, where
+# a network drive or syncing could damage a database). A backup copy is saved into the
 # library folder after every job.
 # --------------------------------------------------------------------------
 def lib_dir(dest):
@@ -1380,7 +1380,7 @@ class Tagger:
 # renaming photo files inside the library (with undo)
 # --------------------------------------------------------------------------
 def safe_stem(text):
-    """Make text safe to use as a Windows/iCloud file name (without the extension)."""
+    """Make text safe to use as a Windows file name (without the extension)."""
     t = re.sub(r'[<>:"/\\|?*\x00-\x1f]', " ", text or "")
     t = re.sub(r"\s+", " ", t).strip(" .")
     return t[:100]
@@ -2685,10 +2685,6 @@ class Handler(BaseHTTPRequestHandler):
         dest = self._dest()
         if u.path == "/api/config":
             cfg = load_config()
-            if not cfg.get("dest"):
-                ic = find_icloud_drive()
-                if ic:
-                    cfg["dest"] = str(Path(ic) / "Photo Library")
             cfg["missing"] = [x for x in cfg.get("sources", []) if x and not Path(x).exists()]
             cfg["dest_missing"] = library_missing(cfg.get("dest", "")) and catalog_exists(cfg.get("dest", ""))
             return self._send(cfg)

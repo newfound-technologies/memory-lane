@@ -1,4 +1,4 @@
-**What's new:** The User guide now covers setting places, the green, blue and yellow tags, videos, new-photo review, and updating.
+**What's new:** Settings now asks you to choose a folder on your home server (such as the Z: drive) for the clean library.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.

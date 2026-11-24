@@ -10,8 +10,8 @@ MEMORY LANE  -  quick start (Windows)
    (If a task is running, such as organizing, it finishes first.)
 (The first time Memory Lane opens it asks where your photos are and where the library
    should go. There is also a User guide page in the program's menu.)
-3. Settings: add the folders your photos are in, and a library folder INSIDE
-   iCloud Drive (needs "iCloud for Windows"). Choose how files are named.
+3. Settings: add the folders your photos are in, and a library folder where the clean
+   library should be saved (for example the Z: drive on your home server). Choose how files are named.
 4. Home: click "Organize everything" (or "Preview first").
 5. People: type a name under each face group. Photos: search by name, year,
    month, or what is in the picture.
@@ -157,10 +157,10 @@ next time you sign in. (A fully shut-down computer cannot wake itself.) A log of
 in your user folder: .photokeeper\auto_log.txt
 
 WHERE THINGS LIVE
- - Library folder (iCloud Drive): your photos + a backup of the catalog.
+ - Library folder (your home server drive): your photos + a backup of the catalog.
  - The working catalog, thumbnails and face crops are kept on this computer
-   (in .photokeeper in your user folder), NOT in iCloud, so sync cannot
-   damage them.
+   (in .photokeeper in your user folder), NOT on the server, so a network
+   hiccup cannot damage them.
 
 IF SOMETHING SAYS "MISSING": the Home page shows a yellow notice naming the add-on
 that did not install. Run "Memory Lane Setup" again (it repairs missing add-ons).
