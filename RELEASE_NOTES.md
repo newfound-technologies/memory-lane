@@ -1,4 +1,4 @@
-**What's new:** A photo whose file is missing can now be deleted, so empty gray tiles no longer get stuck.
+**What's new:** Automatic runs: choose any days of the week, each with its own time, or run every day.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.

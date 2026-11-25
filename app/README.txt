@@ -104,7 +104,7 @@ SETTING A PLACE YOURSELF: if a photo has no location, or the wrong one, open it,
 
 HOME SCREEN COUNTS: click the Photos or Videos number to see them all as small pictures, and keep scrolling to load more. "Small pictures" / "Larger pictures" on the Photos page switches the size any time.
 
-AUTOMATIC WEEKLY RUN: the button for the current state (On or Off) is highlighted green with a check mark, and the status line below is green when on and red when off.
+AUTOMATIC RUNS: the button for the current state (On or Off) is highlighted green with a check mark, and the status line below is green when on and red when off.
 
 THE KIND LIST (Photos page) only shows kinds that have files in it. When the last Screenshot is moved or deleted, "Screenshots" disappears from the list.
 
@@ -151,7 +151,8 @@ TOOLS PAGE: each step on its own, plus "Check before you delete" which
 confirms every photo in your old folders is safely in the library. It never
 deletes anything itself.
 
-AUTOMATIC WEEKLY RUN: Settings > Automatic weekly run. Uses Windows Task
+AUTOMATIC RUNS: Settings > Automatic runs. Tick the days you want and choose a time for each
+(or click "Every day" or "Weekdays" to set them all at once). Uses Windows Task
 Scheduler. It wakes a sleeping computer, and if the computer was off it catches up
 next time you sign in. (A fully shut-down computer cannot wake itself.) A log of automatic runs is
 in your user folder: .photokeeper\auto_log.txt
@@ -169,7 +170,7 @@ your user folder; send that file if you need help.
 
 UPDATING: run the new "Memory Lane Setup" over the old one. Your photos, library,
 names and tags are kept (they live in the .photokeeper folder and your library folder).
-If you turned on the weekly automatic run, open Settings and click "Turn on" once more
+If you turned on the automatic runs, open Settings and click "Turn on" once more
 after an update so it points at the new copy.
 
 REMOVING: Windows Settings > Apps > Memory Lane > Uninstall. Your photos and library

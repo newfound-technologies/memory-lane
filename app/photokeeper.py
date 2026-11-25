@@ -45,7 +45,7 @@ except Exception:
 APP_NAME = "Memory Lane"
 DOWNLOAD_PAGE = "https://newfound-technologies.github.io/memory-lane/"
 UPDATE_REPO = "newfound-technologies/memory-lane"      # where new versions are published (GitHub Releases)
-VERSION = "2.11.3"
+VERSION = "2.12.0"
 
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".gif", ".bmp",
              ".tif", ".tiff", ".webp"}
@@ -2409,6 +2409,53 @@ DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
 NO_WINDOW = {"creationflags": 0x08000000} if os.name == "nt" else {}     # never flash a console window
 
 
+DAY_FULL = {"MON": "Monday", "TUE": "Tuesday", "WED": "Wednesday", "THU": "Thursday",
+            "FRI": "Friday", "SAT": "Saturday", "SUN": "Sunday"}
+_TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
+
+
+def _clean_schedule(days):
+    """Keep only valid {day: 'HH:MM'} pairs."""
+    out = {}
+    for d, t in (days or {}).items():
+        d = str(d).upper()[:3]
+        if d in DAYS and _TIME_RE.match(str(t or "")):
+            out[d] = str(t)
+    return out
+
+
+def _next_run_text(sched):
+    """Plain-English time of the next run, worked out from the saved days and times."""
+    if not sched:
+        return ""
+    now = dt.datetime.now()
+    best = None
+    for add in range(0, 9):
+        day = now + dt.timedelta(days=add)
+        t = sched.get(DAYS[day.weekday()])
+        if not t:
+            continue
+        h, m = int(t[:2]), int(t[3:])
+        when = day.replace(hour=h, minute=m, second=0, microsecond=0)
+        if when > now and (best is None or when < best):
+            best = when
+    if not best:
+        return ""
+    h12 = best.hour % 12 or 12
+    return (f"{best:%A} {best.month}/{best.day}/{best.year} "
+            f"{h12}:{best:%M} {'AM' if best.hour < 12 else 'PM'}")
+
+
+def _delete_tasks():
+    import subprocess
+    for name in [TASK_NAME] + [f"{TASK_NAME}_{i}" for i in range(2, 8)]:
+        try:
+            subprocess.run(["schtasks", "/Delete", "/TN", name, "/F"],
+                           capture_output=True, text=True, timeout=20, **NO_WINDOW)
+        except Exception:
+            pass
+
+
 def schedule_status():
     if os.name != "nt":
         return {"supported": False, "enabled": False}
@@ -2420,55 +2467,77 @@ def schedule_status():
         return {"supported": True, "enabled": False}
     if r.returncode != 0:
         return {"supported": True, "enabled": False}
-    info = ""
-    for line in r.stdout.splitlines():
-        if line.lower().startswith("next run time"):
-            info = line.split(":", 1)[1].strip()
-    return {"supported": True, "enabled": True, "next": info}
+    sched = _clean_schedule(load_config().get("schedule"))
+    info = _next_run_text(sched)
+    if not info:                        # a schedule made by an older version
+        for line in r.stdout.splitlines():
+            if line.lower().startswith("next run time"):
+                info = line.split(":", 1)[1].strip()
+    return {"supported": True, "enabled": True, "next": info, "days": sched}
 
 
-def schedule_set(enabled, day="SUN", at="02:00"):
+def schedule_set(enabled, days=None):
+    """days = {"MON": "02:00", "WED": "21:30", ...}: one run at that time on each listed day."""
     if os.name != "nt":
-        return {"error": "Automatic weekly runs are only available on Windows."}
+        return {"error": "Automatic runs are only available on Windows."}
     import subprocess
     if not enabled:
-        r = subprocess.run(["schtasks", "/Delete", "/TN", TASK_NAME, "/F"],
-                           capture_output=True, text=True, timeout=20, **NO_WINDOW)
+        _delete_tasks()
         return {"ok": True}
-    if day not in DAYS or not re.match(r"^([01]\d|2[0-3]):[0-5]\d$", at or ""):
-        return {"error": "Please choose a valid day and time."}
+    sched = _clean_schedule(days)
+    if not sched:
+        return {"error": "Please tick at least one day and choose a time."}
     exe = Path(sys.executable)
     pyw = exe.with_name("pythonw.exe")
     runner = str(pyw if pyw.exists() else exe)
     script = str(Path(__file__).resolve())
     workdir = str(Path(script).parent)
+    groups = {}                          # same time on several days -> one trigger
+    for d in DAYS:
+        if d in sched:
+            groups.setdefault(sched[d], []).append(d)
+
+    def keep():
+        cfg = load_config()
+        cfg["schedule"] = sched
+        save_config(cfg)
+
     # Preferred: PowerShell, so the task can wake the computer and catch up if a run was missed.
     q = lambda t: "'" + t.replace("'", "''") + "'"
-    day_full = {"MON": "Monday", "TUE": "Tuesday", "WED": "Wednesday", "THU": "Thursday",
-                "FRI": "Friday", "SAT": "Saturday", "SUN": "Sunday"}[day]
+    trig = "; ".join(
+        f"New-ScheduledTaskTrigger -Weekly -DaysOfWeek {','.join(DAY_FULL[d] for d in ds)} -At {q(t)}"
+        for t, ds in groups.items())
     ps = (f"$a = New-ScheduledTaskAction -Execute {q(runner)} -Argument {q(chr(34) + script + chr(34) + ' --auto')} "
           f"-WorkingDirectory {q(workdir)}; "
-          f"$t = New-ScheduledTaskTrigger -Weekly -DaysOfWeek {day_full} -At {q(at)}; "
+          f"$t = @({trig}); "
           "$s = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable -AllowStartIfOnBatteries "
           "-DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Hours 12); "
           f"Register-ScheduledTask -TaskName {q(TASK_NAME)} -Action $a -Trigger $t -Settings $s -Force | Out-Null")
     try:
+        _delete_tasks()
         r = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
                            capture_output=True, text=True, timeout=60, **NO_WINDOW)
         if r.returncode == 0:
+            keep()
             return {"ok": True, "wakes": True}
     except Exception:
         pass
-    r = subprocess.run(["schtasks", "/Create", "/TN", TASK_NAME, "/SC", "WEEKLY", "/D", day,
-                        "/ST", at, "/TR", f'"{runner}" "{script}" --auto', "/F"],
-                       capture_output=True, text=True, timeout=30, **NO_WINDOW)
-    if r.returncode != 0:
-        return {"error": "Windows would not create the schedule: " + (r.stderr or r.stdout).strip()}
+    # Fallback: one Windows task per distinct time
+    _delete_tasks()
+    for n, (t, ds) in enumerate(groups.items(), 1):
+        name = TASK_NAME if n == 1 else f"{TASK_NAME}_{n}"
+        r = subprocess.run(["schtasks", "/Create", "/TN", name, "/SC", "WEEKLY", "/D", ",".join(ds),
+                            "/ST", t, "/TR", f'"{runner}" "{script}" --auto', "/F"],
+                           capture_output=True, text=True, timeout=30, **NO_WINDOW)
+        if r.returncode != 0:
+            _delete_tasks()
+            return {"error": "Windows would not create the schedule: " + (r.stderr or r.stdout).strip()}
+    keep()
     return {"ok": True, "wakes": False}
 
 
 def run_auto():
-    """Headless weekly run: uses the folders saved from the last time you used the app."""
+    """Headless scheduled run: uses the folders saved from the last time you used the app."""
     cfg = load_config()
     log = CONFIG_DIR / "auto_log.txt"
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -3079,8 +3148,10 @@ class Handler(BaseHTTPRequestHandler):
                 c.close()
             return self._send({"ok": True})
         if path == "/api/schedule":
-            return self._send(schedule_set(bool(body.get("enabled")), body.get("day", "SUN"),
-                                           body.get("time", "02:00")))
+            days = body.get("days")
+            if days is None:                       # older single day + time form
+                days = {body.get("day", "SUN"): body.get("time", "02:00")}
+            return self._send(schedule_set(bool(body.get("enabled")), days))
         return self._send({"error": "not found"}, 404)
 
 

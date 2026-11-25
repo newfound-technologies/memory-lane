@@ -181,6 +181,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
 .photos.small{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}.photos.small .ph{border-radius:7px}.photos.small .cap{display:none}.photos.small .ph.sel::after{width:20px;height:20px;top:4px;right:4px;font-size:12px}
 .btn.active{background:var(--brand);color:#fff;box-shadow:0 3px 10px rgba(31,111,120,.35)}
 .tile.link{cursor:pointer}.tile.link:hover{box-shadow:0 4px 16px rgba(14,28,47,.18)}.tile.link .l::after{content:" ›"}
+.sdays{display:grid;gap:6px;max-width:360px}.sday{display:flex;align-items:center;gap:10px}.sday label{display:flex;align-items:center;gap:8px;width:130px;margin:0;font-weight:600}.sday input[type=time]{width:auto}.sday input[type=time]:disabled{opacity:.4}
 .sstat{font-weight:650}.sstat.on{color:#1d7a46}.sstat.off{color:#b3261e}
 .ph{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#dfe6ee;cursor:pointer;box-shadow:0 1px 3px rgba(14,28,47,.15);border:0;padding:0}
 .ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s}
@@ -316,7 +317,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
 
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
         <div class="card" style="margin:0"><h2>Waiting for you</h2><p class="hint">Things that need a quick look.</p><div id="todo" class="small">Nothing yet.</div></div>
-        <div class="card" style="margin:0"><h2>Automatic weekly run</h2><p class="hint">New photos get filed on their own while you do other things.</p>
+        <div class="card" style="margin:0"><h2>Automatic runs</h2><p class="hint">New photos get filed on their own while you do other things.</p>
           <div id="schedHome" class="small">Loading…</div><button class="btn ghost" onclick="go('settings')">Change schedule</button></div>
       </div>
 
@@ -465,7 +466,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
           <li><b>People</b>: name the faces Memory Lane found.</li>
           <li><b>Look-alikes</b>: photos that are almost the same as one you already have, set aside so you can choose.</li>
           <li><b>Tools</b>: the same steps as Organize everything, one at a time, plus a safety check.</li>
-          <li><b>Settings</b>: your folders, file naming and the automatic weekly run.</li></ul></div></details>
+          <li><b>Settings</b>: your folders, file naming and the automatic runs.</li></ul></div></details>
         <details><summary>Name the people</summary><div class="gb"><ol>
           <li>Open <b>People</b>. Each card is one person (or a few people who look alike).</li>
           <li>Click the box under the faces. Pick a name from the list or type a new one, then click <b>Save</b>.</li>
@@ -507,7 +508,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
           <li>Click a video to open it and play it with the usual controls.</li>
           <li>Videos can be tagged and sorted like photos.</li></ul></div></details>
         <details><summary>After an automatic update: your new photos</summary><div class="gb"><ul>
-          <li>When the weekly run adds photos, the next time you open Memory Lane a window shows only those new photos.</li>
+          <li>When an automatic run adds photos, the next time you open Memory Lane a window shows only those new photos.</li>
           <li>Tag them, name them, set where they were taken, or delete the ones you do not want.</li>
           <li>Click <b>Finished reviewing</b> when you are done. <b>Close for now</b> keeps it for next time.</li></ul></div></details>
         <details><summary>Update Memory Lane</summary><div class="gb"><ul>
@@ -517,7 +518,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
           <li>The version number is at the bottom of the left menu.</li></ul></div></details>
         <details><summary>Add new photos later</summary><div class="gb"><ul>
           <li>Put new photos in one of your photo folders and click <b>Organize everything</b> again. It only handles what is new.</li>
-          <li>Want it hands-free? Settings → <b>Automatic weekly run</b> → pick a day and time → <b>Turn on</b>.</li></ul></div></details>
+          <li>Want it hands-free? Settings → <b>Automatic runs</b> → tick the days you want (or click <b>Every day</b>), choose a time for each → <b>Turn on</b>.</li></ul></div></details>
         <details><summary>Places and “Show on map”</summary><div class="gb"><ul>
           <li>Photos taken with location turned on show the nearest town, for example “West Yellowstone, Montana”. A yellow 📍 tag on the picture shows the town, and you can search by it. If a photo has no location, or the wrong one, open the photo, type it in the box under the date, and click <b>Save place</b>.</li>
           <li>It is worked out on your computer; nothing is sent anywhere. “Show on map” opens the map only when you click it.</li>
@@ -549,10 +550,15 @@ td{padding:11px 10px;border-bottom:1px solid var(--line);word-break:break-all}
         <button class="btn primary" onclick="saveSettings(true)">Save settings</button>
       </div>
       <div class="card">
-        <h2>Automatic weekly run</h2><p class="hint">Runs “Organize everything” by itself, using the settings above. If the computer is asleep it wakes it up (it must be plugged in or allow wake timers), and if it was off it catches up the next time you turn it on and sign in.</p>
-        <div class="row">
-          <select id="sday" style="width:auto"><option value="SUN">Sunday</option><option value="MON">Monday</option><option value="TUE">Tuesday</option><option value="WED">Wednesday</option><option value="THU">Thursday</option><option value="FRI">Friday</option><option value="SAT">Saturday</option></select>
-          <select id="stime" style="width:auto"><option value="02:00">2:00 AM</option><option value="03:00">3:00 AM</option><option value="21:00">9:00 PM</option><option value="12:00">Noon</option></select>
+        <h2>Automatic runs</h2><p class="hint">Runs “Organize everything” by itself, using the settings above, so new photos are filed and backed up without you. Tick the days you want and choose a time for each. If the computer is asleep it wakes it up (it must be plugged in or allow wake timers), and if it was off it catches up the next time you turn it on and sign in.</p>
+        <div id="schedDays" class="sdays"></div>
+        <div class="row" style="margin-top:10px;align-items:center">
+          <span class="small">Quick set, at</span><input type="time" id="sall" value="02:00" style="width:auto">
+          <button class="btn ghost" style="margin:0" onclick="schedQuick('all')">Every day</button>
+          <button class="btn ghost" style="margin:0" onclick="schedQuick('wk')">Weekdays</button>
+          <button class="btn ghost" style="margin:0" onclick="schedQuick('none')">Clear</button>
+        </div>
+        <div class="row" style="margin-top:12px">
           <button class="btn ghost" id="sOn" style="margin:0" onclick="setSchedule(true)">Turn on</button>
           <button class="btn ghost" id="sOff" style="margin:0" onclick="setSchedule(false)">Turn off</button>
         </div>
@@ -648,8 +654,22 @@ async function browse(which){
   const r=await api('/api/browse',{});if(!r.path){if(r.error)toast(r.error);return}
   if(which==='src'){const v=$('src').value.trim();$('src').value=(v?v+'\n':'')+r.path}else $('dest').value=r.path;
 }
+const SDAYS=[['SUN','Sunday'],['MON','Monday'],['TUE','Tuesday'],['WED','Wednesday'],['THU','Thursday'],['FRI','Friday'],['SAT','Saturday']];
+function buildSchedDays(days){
+  const box=$('schedDays');if(!box)return;
+  box.innerHTML=SDAYS.map(([k,n])=>'<div class="sday"><label><input type="checkbox" id="sd_'+k+'" onchange="schedRow(\''+k+'\')">'+n+'</label><input type="time" id="st_'+k+'" value="02:00"></div>').join('');
+  SDAYS.forEach(([k])=>{const t=days&&days[k];$('sd_'+k).checked=!!t;if(t)$('st_'+k).value=t;schedRow(k)});
+}
+function schedRow(k){$('st_'+k).disabled=!$('sd_'+k).checked}
+function schedQuick(w){
+  const t=$('sall').value||'02:00';
+  SDAYS.forEach(([k])=>{const on=w==='all'||(w==='wk'&&!['SAT','SUN'].includes(k));$('sd_'+k).checked=on;if(on)$('st_'+k).value=t;schedRow(k)});
+}
+function schedDays(){const o={};SDAYS.forEach(([k])=>{if($('sd_'+k).checked&&$('st_'+k).value)o[k]=$('st_'+k).value});return o}
+let schedBuilt=false;
 async function loadSchedule(){
   const s=await api('/api/schedule');let t;
+  if(!schedBuilt||!document.querySelector('#schedDays .sday')){buildSchedDays(s.days&&Object.keys(s.days).length?s.days:{SUN:'02:00'});schedBuilt=true}
   if(!s.supported)t='Automatic runs are available on Windows only.';
   else if(s.enabled)t='✓ On'+(s.next&&s.next!=='N/A'?'. Next run: '+s.next:'.');
   else t='Off. Turn it on to have new photos filed automatically.';
@@ -660,8 +680,10 @@ async function loadSchedule(){
   $('schedHome').textContent=t;
 }
 async function setSchedule(on){
-  await saveSettings(false);const r=await api('/api/schedule',{enabled:on,day:$('sday').value,time:$('stime').value});
-  if(r.error)toast(r.error);else toast(on?(r.wakes===false?'Weekly run is on (it cannot wake a sleeping computer on this setup)':'Weekly run is on'):'Weekly run is off');loadSchedule();
+  const days=schedDays();
+  if(on&&!Object.keys(days).length){toast('Tick at least one day first');return}
+  await saveSettings(false);const r=await api('/api/schedule',{enabled:on,days:days});
+  if(r.error)toast(r.error);else toast(on?(r.wakes===false?'Automatic runs are on (it cannot wake a sleeping computer on this setup)':'Automatic runs are on'):'Automatic runs are off');loadSchedule();
 }
 
 async function startOver(){
