@@ -45,7 +45,7 @@ except Exception:
 APP_NAME = "Memory Lane"
 DOWNLOAD_PAGE = "https://newfound-technologies.github.io/memory-lane/"
 UPDATE_REPO = "newfound-technologies/memory-lane"      # where new versions are published (GitHub Releases)
-VERSION = "2.11.2"
+VERSION = "2.11.3"
 
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".gif", ".bmp",
              ".tif", ".tiff", ".webp"}
@@ -1608,7 +1608,14 @@ def trash_photos(dest, ids):
                 continue
             src = dest / r[0]
             if not src.exists():
-                failed += 1
+                # The file itself is gone (never copied, or deleted outside the program). Retire
+                # its catalog entry so the empty tile disappears and a later Organize does not
+                # bring it back.
+                cat.db.execute("UPDATE files SET rel_path=?, converted=2 WHERE sha=?",
+                               (str(TRASH_DIR / src.name), i))
+                cat.db.execute("INSERT OR REPLACE INTO trash(sha, old_rel, at) VALUES(?,?,?)",
+                               (i, r[0], dt.datetime.now().isoformat(timespec="seconds")))
+                moved += 1
                 continue
             target = unique_target(tdir, src.name, reserved)
             try:

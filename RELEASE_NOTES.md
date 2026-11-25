@@ -1,4 +1,4 @@
-**What's new:** Settings now asks you to choose a folder on your home server (such as the Z: drive) for the clean library.
+**What's new:** A photo whose file is missing can now be deleted, so empty gray tiles no longer get stuck.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.
