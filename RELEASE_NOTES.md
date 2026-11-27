@@ -1,4 +1,4 @@
-**What's new:** A new look: frosted glass panels with a warm golden-hour glow.
+**What's new:** The frosted glass look in cool blue, and a fix so the green On button stays readable.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.
