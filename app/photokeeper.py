@@ -45,7 +45,7 @@ except Exception:
 APP_NAME = "Memory Lane"
 DOWNLOAD_PAGE = "https://newfound-technologies.github.io/memory-lane/"
 UPDATE_REPO = "newfound-technologies/memory-lane"      # where new versions are published (GitHub Releases)
-VERSION = "2.13.2"
+VERSION = "2.13.3"
 
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".gif", ".bmp",
              ".tif", ".tiff", ".webp"}
@@ -2456,6 +2456,29 @@ def _delete_tasks():
             pass
 
 
+def _rebuild_face_crop(dest, fid, out):
+    """Draw a face's small picture again from its photo (the crops live on this computer,
+    so they are missing when a library is opened from a new place)."""
+    import io
+    c = Catalog(dest)
+    try:
+        r = c.db.execute("SELECT f.x,f.y,f.w,f.h,i.orig_path,i.rel_path FROM faces f "
+                         "JOIN files i ON i.sha=f.sha WHERE f.id=?", (fid,)).fetchone()
+    finally:
+        c.close(backup=False)
+    if not r:
+        raise FileNotFoundError("face")
+    x, y, w, h, orig, rel = r
+    path = orig if orig and os.path.exists(orig) else str(Path(dest).expanduser() / rel)
+    pil = _open_upright(path, 1600)
+    pad = int(0.35 * max(w, h))
+    box = (max(0, x - pad), max(0, y - pad), min(pil.width, x + w + pad), min(pil.height, y + h + pad))
+    buf = io.BytesIO()
+    pil.crop(box).resize((112, 112)).save(buf, "JPEG", quality=85)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(buf.getvalue())
+
+
 def schedule_status():
     if os.name != "nt":
         return {"supported": False, "enabled": False}
@@ -2884,6 +2907,8 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 fid = int(q.get("id", ["0"])[0])
                 f = lib_dir(dest) / "faces" / f"{fid}.jpg"
+                if not f.exists():
+                    _rebuild_face_crop(dest, fid, f)     # e.g. after the library moved to a new drive
                 return self._send(f.read_bytes(), ctype="image/jpeg", cache=True)
             except Exception:
                 return self._send({"error": "no face"}, 404)

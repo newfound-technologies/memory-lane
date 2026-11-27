@@ -1,4 +1,4 @@
-**What's new:** The frosted glass look in cool blue, and a fix so the green On button stays readable.
+**What's new:** Face pictures on the People page now redraw themselves if they are missing, for example after moving the library to a new drive.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.

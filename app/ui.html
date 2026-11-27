@@ -1120,6 +1120,7 @@ async function loadPeople(){pdata=await api('/api/people');
   $('names').innerHTML=(pdata.named||[]).map(g=>`<option value="${esc(g.name)}">`).join('');
   if(ptab==='todo'&&pdata.named&&pdata.named.length&&!(pdata.unnamed||[]).length)ptab='named';
   renderPeople()}
+document.addEventListener('error',e=>{const i=e.target;if(i&&i.tagName==='IMG'&&/\/api\/face\?/.test(i.src)){i.onerror=null;i.src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 112 112'%3E%3Crect width='112' height='112' fill='%23dfe6ee'/%3E%3Ccircle cx='56' cy='44' r='20' fill='%23b4c2d2'/%3E%3Cpath d='M18 112c4-28 20-40 38-40s34 12 38 40z' fill='%23b4c2d2'/%3E%3C/svg%3E"}},true);
 function faceStripX(ids){return '<div class="faces">'+(ids||[]).slice(0,4).map(f=>`<span class="fw"><img loading="lazy" src="/api/face?id=${f}&tok=${T}" alt=""><b class="fx" title="This is not a face / remove it" onclick="delFace(${f})">✕</b></span>`).join('')+'</div>'}
 async function delFace(f){const r=await api('/api/people/delete_face',{face:f});if(r.error){toast(r.error);return}toast('Face removed');loadPeople()}
 async function trashGroup(id,n){if(!confirm('Move the '+n+' photo'+(n===1?'':'s')+' in this group to the Trash folder?\n\nYou can restore them from Photos → Deleted photos. Your original folders are not touched.'))return;
