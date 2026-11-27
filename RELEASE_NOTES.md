@@ -1,4 +1,4 @@
-**What's new:** A new look: frosted glass panels in soft sage green and cream.
+**What's new:** A new look: frosted glass panels with a warm golden-hour glow.
 
 **To install**
 1. Download **Memory-Lane-Setup.exe** below (under Assets) and double-click it.
